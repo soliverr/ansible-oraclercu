@@ -1,0 +1,8 @@
+---
+# vars file for ansible-oraclercu
+
+# Supported versions of Oracle RCU
+#oracle_rcu_supported_versions:
+
+oracle_rcu_archive: ofm_rcu_linux_11.1.1.9.0_64_disk1_1of1.zip
+

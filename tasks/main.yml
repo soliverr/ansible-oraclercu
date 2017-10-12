@@ -1,0 +1,43 @@
+---
+# tasks file for ansible-oraclercu
+
+- name: Install required packages
+  tags: oracle-rcu
+  include_role:
+    name: packages
+  vars:
+    packages_add:
+      - unzip
+
+- name: Copy Oracle RCU distribution to target host
+  tags: oracle-rcu
+  include: "../silpion.lib/tasks/copy.yml"
+  vars:
+    filename: "{{ oracle_rcu_archive }}"
+
+- name: Create temporary directory for installation files
+  tags: oracle-rcu
+  file:
+    path: "{{ oracle_rcu_tmp }}"
+    state: directory
+    owner: "{{ oracle_rcu_user }}"
+    group: "{{ oracle_rcu_group }}"
+    mode: 0755
+
+- name: Extract Oracle RCU installation files
+  tags: oracle-rcu
+  become_user: "{{ oracle_rcu_user }}"
+  become: true
+  unarchive:
+    src: "{{ lib_persistent_data_path_remote }}/{{ oracle_rcu_archive }}"
+    dest: "{{ oracle_rcu_tmp }}"
+    remote_src: true
+    owner: "{{ oracle_rcu_user }}"
+    group: "{{ oracle_rcu_group }}"
+    creates: "{{ oracle_rcu_tmp }}/rcuHome"
+
+- include: rcu-run.yml
+  tags: oracle-rcu
+  become_user: "{{ oracle_rcu_user }}"
+  become: true
+  when: oracle_rcu_components is defined

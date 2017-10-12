@@ -1,0 +1,32 @@
+---
+# Run RCU
+
+- name: Create password files for RCU
+  with_items: "{{ oracle_rcu_components }}"
+  template:
+    src: rcu-password.j2
+    dest: "{{ oracle_rcu_tmp }}/{{ item.schema_prefix }}.pwd"
+    owner: "{{ oracle_rcu_user }}"
+    group: "{{ oracle_rcu_group }}"
+    mode: 0640
+
+- name: Create repositories with RCU
+  with_items: "{{ oracle_rcu_components }}"
+  register: _oracle_rcu_result
+  shell: "{{ oracle_rcu_tmp}}/rcuHome/bin/rcu -silent -createRepository -databaseType {{ oracle_rcu_db_type }} -connectString {{ oracle_rcu_db_connect }}
+ -dbUser {{ oracle_rcu_db_user }} -dbRole {{ oracle_rcu_db_role }} -schemaPrefix {{ item.schema_prefix }}
+ {% for c in item.components %}
+ -component {{ c.name }}
+ {% if c.tablespace is defined %} -tablespace {{ c.tablespace }}
+ {% elif item.tablespace is defined %} -tablespace {{ item.tablespace }}
+ {% elif oracle_rcu_tablespace is defined %} -tablespace {{ oracle_rcu_tablespace }}
+ {% endif %}
+ {% if c.temptablespace is defined %} -tempTablespace {{ c.temptablespace }}
+ {% elif item.temptablespace is defined %} -tempTablespace {{ item.temptablespace }}
+ {% elif oracle_rcu_temptablespace is defined %} -tempTablespace {{ oracle_rcu_temptablespace }}
+ {% endif %}
+ {% endfor %}
+ -f < {{ oracle_rcu_tmp }}/{{ item.schema_prefix }}.pwd"
+
+
+#FIXME: Save facts from _oracle_rcu_result

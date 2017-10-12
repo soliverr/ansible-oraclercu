@@ -1,0 +1,16 @@
+---
+# defaults for ansible-oraclercu
+
+# Default system' user and group for install software
+oracle_rcu_user: oracle
+oracle_rcu_group: oinstall
+
+# Default Temporary directory
+oracle_rcu_tmp: /tmp/rcu
+
+# Defaults for connecting database
+oracle_rcu_db_user: sys
+oracle_rcu_db_password: ''
+oracle_rcu_db_role: sysdba
+# Database types: ORACLE, IBMDB2, SQLSERVER, EBR, MYSQL
+oracle_rcu_db_type: ORACLE
