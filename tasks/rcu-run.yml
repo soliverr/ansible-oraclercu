@@ -2,6 +2,7 @@
 # Run RCU
 
 - name: Create password files for RCU
+  tags: oracle-rcu
   with_items: "{{ oracle_rcu_components }}"
   template:
     src: rcu-password.j2
@@ -11,6 +12,8 @@
     mode: 0640
 
 - name: Create repositories with RCU
+  tags: oracle-rcu
+  when: ansible_local.oraclercu is not defined and oracle_rcu_mode == 'create'
   with_items: "{{ oracle_rcu_components }}"
   register: _oracle_rcu_result
   shell: "{{ oracle_rcu_tmp}}/rcuHome/bin/rcu -silent -createRepository -databaseType {{ oracle_rcu_db_type }} -connectString {{ oracle_rcu_db_connect }}
@@ -28,5 +31,14 @@
  {% endfor %}
  -f < {{ oracle_rcu_tmp }}/{{ item.schema_prefix }}.pwd"
 
-
-#FIXME: Save facts from _oracle_rcu_result
+- name: Drop repositories with RCU
+  tags: oracle-rcu
+  when: (ansible_local.oraclercu is defined and oracle_rcu_mode == 'drop') or oracle_rcu_mode == 'forcedrop'
+  with_items: "{{ oracle_rcu_components }}"
+  register: _oracle_rcu_result
+  shell: "{{ oracle_rcu_tmp}}/rcuHome/bin/rcu -silent -dropRepository -databaseType {{ oracle_rcu_db_type }} -connectString {{ oracle_rcu_db_connect }}
+ -dbUser {{ oracle_rcu_db_user }} -dbRole {{ oracle_rcu_db_role }} -schemaPrefix {{ item.schema_prefix }}
+ {% for c in item.components %}
+ -component {{ c.name }}
+ {% endfor %}
+ -f < {{ oracle_rcu_tmp }}/{{ item.schema_prefix }}.pwd"

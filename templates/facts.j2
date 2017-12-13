@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+[general]
+db_connect={{ oracle_rcu_db_connect }}
+db_user={{ oracle_rcu_db_user }}
+
+{% for res in _oracle_rcu_result.results %}
+{% for comp in res.item.components %}
+[{{ res.item.schema_prefix }}_{{ comp.name }}]
+tablespace={{ comp.tablespace|default(res.item.tablespace|default(oracle_rcu_tablespace)) }}
+temptablespace={{ comp.temptablespace|default(res.item.temptablespace|default(oracle_rcu_temptablespace)) }}
+
+{% endfor %}
+{% endfor %}

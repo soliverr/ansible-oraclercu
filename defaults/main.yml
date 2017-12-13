@@ -8,6 +8,9 @@ oracle_rcu_group: oinstall
 # Default Temporary directory
 oracle_rcu_tmp: /tmp/rcu
 
+# Default RCU Mode
+oracle_rcu_mode: create
+
 # Defaults for connecting database
 oracle_rcu_db_user: sys
 oracle_rcu_db_password: ''

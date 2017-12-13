@@ -1,6 +1,13 @@
 ---
 # tasks file for ansible-oraclercu
 
+- name: Assert RCU mode is supported
+  tags: oracle-rcu
+  assert:
+    that:
+      - oracle_rcu_mode in ['create', 'drop', 'forcedrop']
+    msg: "oracle_rcu_mode must be either 'create' or 'drop'"
+
 - name: Install required packages
   tags: oracle-rcu
   include_role:
@@ -41,3 +48,24 @@
   become_user: "{{ oracle_rcu_user }}"
   become: true
   when: oracle_rcu_components is defined
+
+- name: Include local facts tasks
+  tags: oraclercu
+  when: _oracle_rcu_result is defined and oracle_rcu_mode == 'create'
+  include: "{{ role_path }}/../silpion.lib/tasks/localfacts.yml"
+  vars:
+    namespace: oraclercu
+
+# FIXME: Need to fix silpion.lib
+- name: Remove local facts
+  tags: oraclercu
+  when: oracle_rcu_mode in [ 'drop', 'forcedrop' ]
+  file:
+    path: /etc/ansible/facts.d/oraclercu.fact
+    state: absent
+
+- name: Re-read local facts
+  when: oracle_rcu_mode in [ 'drop', 'forcedrop' ]
+  setup:
+    filter: ansible_local
+    fact_path: /etc/ansible/facts.d'
